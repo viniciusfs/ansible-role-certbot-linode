@@ -1,4 +1,5 @@
 galaxy_info:
+  role_name: certbot-linode
   author: Vinicius Figueiredo
   description: Use Certbot and Linode DNS plugin to create Let's Encrypt root and wildcard certificates.
   license: MIT
