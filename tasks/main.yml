@@ -1,0 +1,35 @@
+---
+- name: Enable EPEL repositories
+  yum:
+    name: epel-release
+    state: installed
+
+- name: Install required packages
+  yum:
+    name:
+      - certbot
+      - python2-certbot-dns-linode
+    state: installed
+
+- name: Deploy credentials file
+  template:
+    src: "linode_credentials.ini.j2"
+    dest: "{{ certbot_linode_credentials_file }}"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Create certificates with certbot application
+  shell: >
+    certbot certonly --noninteractive --dns-linode --dns-linode-credentials {{ certbot_linode_credentials_file }}
+    --agree-tos --email {{ item.email | default(certbot_email) }} -d {{ item.domain }} -d *.{{ item.domain }}
+  with_items:
+    - "{{ certbot_domains }}"
+
+- name: Setup cron job to renew certificates
+  cron:
+    name: Certbot automatic renew
+    job: /bin/certbot renew
+    minute: "{{ certbot_auto_renew_minute }}"
+    hour: "{{ certbot_auto_renew_hour }}"
+  when: certbot_auto_renew == true
